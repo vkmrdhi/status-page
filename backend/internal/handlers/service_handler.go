@@ -6,6 +6,7 @@ import (
 
 	"github.com/vikasatfactors/status-page-app/backend/internal/models"
 	"github.com/vikasatfactors/status-page-app/backend/internal/repositories"
+	"github.com/vikasatfactors/status-page-app/backend/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -163,4 +164,71 @@ func GetPublicStatus(
 			"maintenances": maintenances,
 		})
 	}
+}
+
+type ServiceHandler struct {
+	serviceStatusService *services.ServiceStatusService
+}
+
+func NewServiceHandler(serviceStatusService *services.ServiceStatusService) *ServiceHandler {
+	return &ServiceHandler{serviceStatusService: serviceStatusService}
+}
+
+func (h *ServiceHandler) UpdateServiceStatus(c *gin.Context) {
+	// Get the service ID from the URL
+	serviceID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid service ID"})
+		return
+	}
+
+	// Request body for status update
+	var req struct {
+		Status              models.ServiceStatus `json:"status"`
+		IncidentTitle       string               `json:"incident_title,omitempty"`
+		IncidentDescription string               `json:"incident_description,omitempty"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Prepare incident details if not operational
+	var incident *models.Incident
+	if req.Status != models.StatusOperational {
+		incident = &models.Incident{
+			Title:       req.IncidentTitle,
+			Description: req.IncidentDescription,
+		}
+	}
+
+	// Update service status
+	if err := h.serviceStatusService.UpdateServiceStatus(
+		uint(serviceID),
+		req.Status,
+		incident,
+	); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Service status updated successfully"})
+}
+
+func (h *ServiceHandler) GetServiceStatusSummary(c *gin.Context) {
+	// Get organization ID from context (set by middleware)
+	orgID, exists := c.Get("organization_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Organization not found"})
+		return
+	}
+
+	summary, err := h.serviceStatusService.GetServiceStatusSummary(orgID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, summary)
 }
