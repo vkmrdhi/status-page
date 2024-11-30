@@ -5,8 +5,8 @@ import { PropsWithChildren } from 'react';
 const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   return (
     <Auth0Provider
-      domain="dev-1ig767b0haje6gfw.us.auth0.com"
-      clientId="VfIe5K5gwWf9KsUhOHEbEuME663XtaYg"
+      domain={import.meta.env.VITE_AUTH0_DOMAIN}
+      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
       authorizationParams={{
         redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
         audience: import.meta.env.VITE_AUTH0_AUDIENCE,
