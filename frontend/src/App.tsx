@@ -1,16 +1,15 @@
 import React from 'react';
 import AppRoutes from './AppRoutes';
-import Navigation from './components/Navigation';
+import AppLayout from './components/layout/AppLayout';
 
 const App: React.FC = () => {
   return (
     <div className='min-h-screen bg-background'>
-      <Navigation />
-      <div className='pt-16'>
-        {' '}
-        {/* Offset for fixed navigation */}
-        <AppRoutes />
-      </div>
+      <AppLayout>
+        <div className='pt-16'>
+          <AppRoutes />
+        </div>
+      </AppLayout>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,7 +16,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles }) => {
   console.log(user, roles);
   // Loading state
   if (isLoading) {
-    return <div>Loading...</div>;
+    <LoadingSpinner message="Checking authentication..." />
   }
 
   // Not authenticated
@@ -25,7 +26,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles }) => {
 
   if (roles && user) {
     const hasRequiredRole = roles.some((role) =>
-      user['https://yourapp.com/roles']?.includes(role)
+      user['https://mystatuspageapp.com/roles'].includes(role)
     );
 
     if (!hasRequiredRole) {
