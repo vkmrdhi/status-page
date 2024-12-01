@@ -3,48 +3,69 @@ import { Routes, Route } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import PublicStatusPage from './pages/PublicStatusPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import LoadingSpinner from './components/common/LoadingSpinner';
+import PublicStatusPage from './components/status/PublicStatusPage';
+import ServiceManagementPage from './pages/ServiceManagementPage';
+import IncidentManagementPage from './pages/IncidentManagementPage';
+import TeamManagementPage from './pages/TeamManagementPage';
+import UserManagementPage from './pages/UserManagementPage';
 
 const AppRoutes: React.FC = () => {
   const { isLoading } = useAuth0();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<PublicStatusPage />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path='/' element={<PublicStatusPage />} />
+      <Route path='/login' element={<LoginPage />} />
 
       {/* Protected Routes */}
-      <Route 
-        path="/dashboard" 
+      <Route
+        path='/dashboard'
         element={
-          <ProtectedRoute roles={['admin', 'member']}>
+          <ProtectedRoute roles={['admin', 'user']}>
             <DashboardPage />
           </ProtectedRoute>
-        } 
+        }
       />
-      
-      {/* Add more protected routes as needed */}
-      <Route 
-        path="/services" 
+      <Route
+        path='/services'
         element={
           <ProtectedRoute roles={['admin']}>
-            {/* Future Service Management Page */}
-            <div>Service Management</div>
+            <ServiceManagementPage />
           </ProtectedRoute>
-        } 
+        }
       />
-
-      {/* 404 Not Found */}
-      <Route 
-        path="*" 
-        element={<div>Page Not Found</div>} 
+      <Route
+        path='/incidents'
+        element={
+          <ProtectedRoute roles={['admin']}>
+            <IncidentManagementPage />
+          </ProtectedRoute>
+        }
       />
+      <Route
+        path='/teams'
+        element={
+          <ProtectedRoute roles={['admin']}>
+            <TeamManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path='/users'
+        element={
+          <ProtectedRoute roles={['admin']}>
+            <UserManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path='*' element={<div>Page Not Found</div>} />
     </Routes>
   );
 };
