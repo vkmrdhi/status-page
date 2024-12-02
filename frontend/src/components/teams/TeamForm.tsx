@@ -3,17 +3,18 @@ import { Team } from '@/types/types';
 import { Button } from '@/components/ui/button';
 
 interface TeamFormProps {
-  onSubmit: (team: Team) => void;
+  onSave: (team: Team) => void;
+  onCancel: () => void;
   initialData?: Team;
 }
 
-const TeamForm: React.FC<TeamFormProps> = ({ onSubmit, initialData }) => {
+const TeamForm: React.FC<TeamFormProps> = ({ onSave, initialData }) => {
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ id: initialData?.id || Date.now(), name, description });
+    onSave({ id: initialData?.id || Date.now(), name, description });
   };
 
   return (

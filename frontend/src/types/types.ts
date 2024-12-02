@@ -11,11 +11,12 @@ export interface Incident {
   id: string;
   title: string;
   description: string;
-  service: string; // Name or ID of the associated service
-  status: 'investigating' | 'identified' | 'monitoring' | 'resolved';
-  createdAt: string;
-  updatedAt: string;
-  resolvedAt?: string; // Optional field for resolved incidents
+  service_id: string; // Name or ID of the associated service
+  status: 'investigating' | 'active' | 'monitoring' | 'resolved';
+  CreatedAt: string;
+  UpdatedAt: string;
+  ResolvedAt?: string; 
+  priority: 'low' | 'medium' | 'high' | 'critical';
 }
 
 export interface User {

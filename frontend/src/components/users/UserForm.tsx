@@ -24,7 +24,6 @@ const UserForm: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle saving user data (can be API call here)
     navigate('/admin/users');
   };
 

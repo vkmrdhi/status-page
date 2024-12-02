@@ -13,7 +13,6 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles }) => {
   const { isAuthenticated, isLoading, user } = useAuth0();
   const location = useLocation();
-  console.log(user, roles);
   // Loading state
   if (isLoading) {
     <LoadingSpinner message="Checking authentication..." />

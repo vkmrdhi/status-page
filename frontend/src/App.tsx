@@ -1,14 +1,15 @@
 import React from 'react';
 import AppRoutes from './AppRoutes';
 import AppLayout from './components/layout/AppLayout';
+import { AuthContextProvider } from './contexts/AuthContext';
 
 const App: React.FC = () => {
   return (
     <div className='min-h-screen bg-background'>
       <AppLayout>
-        <div className='pt-16'>
+        <AuthContextProvider>
           <AppRoutes />
-        </div>
+        </AuthContextProvider>
       </AppLayout>
     </div>
   );

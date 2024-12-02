@@ -9,10 +9,18 @@ const TeamManagementPage: React.FC = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false); // Add loading state
 
   const loadTeams = async () => {
-    const data = await getTeams();
-    setTeams(data);
+    setLoading(true); // Start loading
+    try {
+      const data = await getTeams();
+      setTeams(data);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    } finally {
+      setLoading(false); // End loading
+    }
   };
 
   const handleCreate = async (newTeam: Team) => {
@@ -56,6 +64,7 @@ const TeamManagementPage: React.FC = () => {
           setShowForm(true);
         }}
         onDelete={handleDelete}
+        loading={loading}
       />
     </div>
   );

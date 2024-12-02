@@ -1,26 +1,17 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Settings 
-} from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { NavItems } from '@/lib/constants';
 
-
 const SidebarNavigation: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
-    <div className="hidden md:flex flex-col w-64 bg-white border-r h-screen p-4">
-      <Link 
-        to="/" 
-        className="text-2xl font-bold text-primary mb-8 text-center"
-      >
-        StatusHub
-      </Link>
-
-      <nav className="space-y-2 flex-grow">
+    <div className='flex-col w-64 bg-white border-r h-full p-4'>
+      <nav className='space-y-2 flex-grow'>
         {NavItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname.startsWith(item.path);
@@ -34,7 +25,7 @@ const SidebarNavigation: React.FC = () => {
                   isActive && 'bg-secondary text-secondary-foreground'
                 )}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className='w-4 h-4' />
                 <span>{item.name}</span>
               </Button>
             </Link>
@@ -42,12 +33,13 @@ const SidebarNavigation: React.FC = () => {
         })}
       </nav>
 
-      <div className="border-t pt-4 space-y-2">
-        <Button variant="outline" className="w-full">
-          Invite Team
-        </Button>
-        <Button variant="outline" className="w-full">
-          <Settings className="w-4 h-4 mr-2" />
+      <div className='border-t mt-auto pt-4'>
+        <Button
+          variant='outline'
+          className='w-full'
+          onClick={() => navigate('/settings')}
+        >
+          <Settings className='w-4 h-4 mr-2' />
           Account Settings
         </Button>
       </div>

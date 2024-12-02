@@ -14,10 +14,18 @@ const ServiceManagementPage: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false); // Add loading state
 
   const loadServices = async () => {
-    const data = await getServices();
-    setServices(data);
+    setLoading(true); // Start loading
+    try {
+      const data = await getServices();
+      setServices(data);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setLoading(false); // End loading
+    }
   };
 
   const handleCreate = async (newService: Service) => {
@@ -47,21 +55,23 @@ const ServiceManagementPage: React.FC = () => {
       <Button onClick={() => setShowForm(true)} className='mb-4'>
         Add New Service
       </Button>
-      {showForm && (
+      {showForm ? (
         <ServiceForm
           service={selectedService}
           onSave={selectedService ? handleUpdate : handleCreate}
           onCancel={() => setShowForm(false)}
         />
+      ) : (
+        <ServiceList
+          services={services}
+          onEdit={(service) => {
+            setSelectedService(service);
+            setShowForm(true);
+          }}
+          onDelete={handleDelete}
+          loading={loading} // Pass the loading prop here
+        />
       )}
-      <ServiceList
-        services={services}
-        onEdit={(service) => {
-          setSelectedService(service);
-          setShowForm(true);
-        }}
-        onDelete={handleDelete}
-      />
     </div>
   );
 };

@@ -16,13 +16,14 @@ import (
 var auth0Domain string
 var auth0Audience string
 
-func init() {
+func Init() {
 	auth0Domain = config.GetEnv("AUTH0_DOMAIN")
 	auth0Audience = config.GetEnv("AUTH0_AUDIENCE")
 }
 
 // Auth0Middleware validates Auth0-issued JWTs
 func Auth0Middleware() gin.HandlerFunc {
+	Init()
 	return func(c *gin.Context) {
 		// First, try to get the token from the Authorization header
 		authHeader := c.GetHeader("Authorization")
@@ -77,12 +78,30 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 
 	// Verify claims
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if claims["aud"] != auth0Audience {
+		// Check audience: if aud is an array, check if auth0Audience is in the array
+		audiences, ok := claims["aud"].([]interface{})
+		if ok {
+			// Iterate through the array and check if the required audience is present
+			found := false
+			for _, audience := range audiences {
+				if audience == auth0Audience {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return nil, errors.New("invalid audience")
+			}
+		} else if claims["aud"] != auth0Audience {
+			// If aud is a single value, check it directly
 			return nil, errors.New("invalid audience")
 		}
+
+		// Verify the issuer
 		if claims["iss"] != fmt.Sprintf("https://%s/", auth0Domain) {
 			return nil, errors.New("invalid issuer")
 		}
+
 		return claims, nil
 	}
 	return nil, errors.New("invalid token")
