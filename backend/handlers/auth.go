@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"backend/config"
 	"backend/models"
 	"backend/utils"
 	"net/http"
@@ -37,7 +36,7 @@ func Signup(c *gin.Context) {
 		Role:         input.Role,
 	}
 
-	if err := config.DB.Create(&user).Error; err != nil {
+	if err := models.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
@@ -58,7 +57,7 @@ func Login(c *gin.Context) {
 	}
 
 	var user models.User
-	if err := config.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
+	if err := models.DB.Where("email = ?", input.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}

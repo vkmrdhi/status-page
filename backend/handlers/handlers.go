@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"backend/models"
+	"fmt"
 	"net/http"
+	"sort"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -170,21 +173,88 @@ func GetService(c *gin.Context) {
 }
 
 func UpdateService(c *gin.Context) {
-	id := c.Param("id")
+	type StatusUpdateRequest struct {
+		Status string `json:"status"`
+	}
+
+	var req StatusUpdateRequest
+	serviceID := c.Param("id") // Service ID from the route
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
 	var service models.Service
-	if err := models.DB.First(&service, id).Error; err != nil {
+	if err := models.DB.First(&service, serviceID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Service not found"})
 		return
 	}
-	if err := c.ShouldBindJSON(&service); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+
+	// Update service status
+	previousStatus := service.Status
+	service.Status = req.Status
 	if err := models.DB.Save(&service).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update service"})
 		return
 	}
+
+	// Handle incidents based on status change
+	if shouldCreateIncident(previousStatus, req.Status) {
+		incident := models.Incident{
+			Title:       "Service Issue Detected",
+			Description: fmt.Sprintf("The %s has entered a degraded or outage state.", service.Name),
+			Status:      "active",
+			Priority:    getIncidentPriority(req.Status), // Set priority based on the status
+			ServiceID:   service.ID,
+			CreatedAt:   time.Now(),
+		}
+		if err := models.DB.Create(&incident).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create incident"})
+			return
+		}
+	} else if shouldResolveIncident(previousStatus, req.Status) {
+		var activeIncident models.Incident
+		if err := models.DB.Where("service_id = ? AND status = ?", service.ID, "active").First(&activeIncident).Error; err == nil {
+			activeIncident.Status = "resolved"
+			activeIncident.ResolvedAt = timePtr(time.Now())
+			if err := models.DB.Save(&activeIncident).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to resolve incident"})
+				return
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, service)
+}
+
+// Helper functions to determine incident logic
+func shouldCreateIncident(previousStatus, newStatus string) bool {
+	return previousStatus == "operational" &&
+		(newStatus == "degraded" || newStatus == "partial_outage" || newStatus == "major_outage")
+}
+
+func shouldResolveIncident(previousStatus, newStatus string) bool {
+	return (previousStatus == "degraded" || previousStatus == "partial_outage" || previousStatus == "major_outage") &&
+		newStatus == "operational"
+}
+
+// Helper function to determine priority based on the service status
+func getIncidentPriority(status string) string {
+	switch status {
+	case "degraded":
+		return "medium"
+	case "partial_outage":
+		return "high"
+	case "major_outage":
+		return "critical"
+	default:
+		return "low" // Default to low if operational or other status
+	}
+}
+
+func timePtr(t time.Time) *time.Time {
+	return &t
 }
 
 func DeleteService(c *gin.Context) {
@@ -212,10 +282,18 @@ func CreateIncident(c *gin.Context) {
 
 func GetIncidents(c *gin.Context) {
 	var incidents []models.Incident
+
 	if err := models.DB.Find(&incidents).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	sort.Slice(incidents, func(i, j int) bool {
+		// Compare the CreatedAt timestamps
+		return incidents[i].CreatedAt.After(incidents[j].CreatedAt)
+	})
+
+	// Return the sorted incidents
 	c.JSON(http.StatusOK, incidents)
 }
 

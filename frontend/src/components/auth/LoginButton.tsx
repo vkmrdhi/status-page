@@ -11,11 +11,11 @@ const LoginButton: React.FC = () => {
   }
 
   return (
-    <Button 
+    <Button
       onClick={() => loginWithRedirect()}
-      className="flex items-center space-x-2"
+      className='flex items-center space-x-2'
     >
-      <LogIn className="mr-2 h-4 w-4" />
+      <LogIn className='mr-2 h-4 w-4' />
       Log In
     </Button>
   );

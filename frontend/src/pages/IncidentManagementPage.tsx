@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import IncidentsList from '@/components/incidents/IncidentsList';
-import IncidentForm from '@/components/incidents/IncidentForm';
 import {
   getIncidents,
   createIncident,
@@ -9,17 +7,27 @@ import {
   deleteIncident,
 } from '@/lib/api';
 import { Incident } from '@/types/types';
+import IncidentForm from '@/components/incidents/IncidentForm';
+import IncidentList from '@/components/incidents/IncidentsList';
 
 const IncidentManagementPage: React.FC = () => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [selectedIncident, setSelectedIncident] = useState<
-    Incident | undefined
-  >();
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(
+    null
+  );
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false); // Add loading state
 
   const loadIncidents = async () => {
-    const data = await getIncidents();
-    setIncidents(data);
+    setLoading(true); // Start loading
+    try {
+      const data = await getIncidents();
+      setIncidents(data);
+    } catch (error) {
+      console.error('Error fetching incidents:', error);
+    } finally {
+      setLoading(false); // End loading
+    }
   };
 
   const handleCreate = async (newIncident: Incident) => {
@@ -34,7 +42,7 @@ const IncidentManagementPage: React.FC = () => {
     setShowForm(false);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     await deleteIncident(id);
     await loadIncidents();
   };
@@ -49,21 +57,24 @@ const IncidentManagementPage: React.FC = () => {
       <Button onClick={() => setShowForm(true)} className='mb-4'>
         Add New Incident
       </Button>
-      {showForm && (
+      {showForm ? (
         <IncidentForm
-          initialData={selectedIncident}
-          onSubmit={selectedIncident ? handleUpdate : handleCreate}
+          incident={selectedIncident}
+          onSave={selectedIncident ? handleUpdate : handleCreate}
           onCancel={() => setShowForm(false)}
         />
+      ) : (
+        <IncidentList
+          incidents={incidents}
+          onEdit={(incident) => {
+            console.log(incident);
+            setSelectedIncident(incident);
+            setShowForm(true);
+          }}
+          onDelete={handleDelete}
+          loading={loading} // Pass the loading state here
+        />
       )}
-      <IncidentsList
-        incidents={incidents}
-        onEdit={(incident: Incident) => {
-          setSelectedIncident(incident);
-          setShowForm(true);
-        }}
-        onDelete={handleDelete}
-      />
     </div>
   );
 };

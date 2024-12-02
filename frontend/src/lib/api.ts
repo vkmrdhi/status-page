@@ -1,14 +1,5 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 
-const API_URL = 'http://localhost:8080'; // Update with your backend URL if needed
-
-// Helper to handle API calls
-const apiClient = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
 // API functions for Teams
 export const createTeam = async (teamData: object) => {
@@ -182,6 +173,7 @@ export const createIncident = async (incidentData: object) => {
 
 export const getIncidents = async () => {
   try {
+    console.log('apiClient', apiClient);
     const response = await apiClient.get('/incidents');
     return response.data;
   } catch (error) {

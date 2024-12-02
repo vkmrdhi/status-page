@@ -9,6 +9,8 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	// Apply CORS middleware to all routes
+	r.Use(middleware.CORSConfig())
 
 	// Apply authentication middleware
 	r.Use(middleware.Auth0Middleware())

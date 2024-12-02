@@ -1,14 +1,14 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { StatusBadgeMap } from '@/lib/constants';
+import { ServiceStatusBadgeMap } from '@/lib/constants';
 
 interface ServiceStatusCardProps {
   name: string;
-  status: keyof typeof StatusBadgeMap;
+  status: keyof typeof ServiceStatusBadgeMap;
 }
 
 const ServiceStatusCard: React.FC<ServiceStatusCardProps> = ({ name, status }) => {
-  const { icon, label, className } = StatusBadgeMap[status];
+  const { icon, label, className } = ServiceStatusBadgeMap[status];
 
   return (
     <div className="flex justify-between items-center p-4 border rounded shadow-sm">

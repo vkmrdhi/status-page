@@ -1,4 +1,5 @@
 import React from 'react';
+import Header from './Header';
 import SidebarNavigation from './SidebarNavigation';
 
 interface AppLayoutProps {
@@ -7,12 +8,15 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className='flex h-screen'>
-      <SidebarNavigation />
-      <div className='flex flex-col flex-1 overflow-hidden'>
-        <main className='flex-1 overflow-y-auto p-6 bg-gray-50'>
+    <div className='h-screen flex flex-col'>
+      <Header />
+
+      <div className='flex flex-grow overflow-hidden'>
+        <SidebarNavigation />
+
+        <div className='flex-grow bg-gray-100 p-4 overflow-auto'>
           {children}
-        </main>
+        </div>
       </div>
     </div>
   );

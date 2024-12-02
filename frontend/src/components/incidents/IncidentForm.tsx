@@ -1,36 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Incident } from '@/types/types';
 import { Button } from '@/components/ui/button';
 
 interface IncidentFormProps {
-  onSubmit: (incident: Incident) => void;
+  onSave: (incident: Incident) => void;
   initialData?: Incident;
   onCancel: () => void;
 }
 
 const IncidentForm: React.FC<IncidentFormProps> = ({
-  onSubmit,
+  onSave,
+  onCancel,
   initialData,
 }) => {
-  const [title, setTitle] = useState(initialData?.title || '');
-  const [description, setDescription] = useState(
+  const [title, setTitle] = useState<string>(initialData?.title || '');
+  const [description, setDescription] = useState<string>(
     initialData?.description || ''
   );
   const [status, setStatus] = useState<Incident['status']>(
     initialData?.status || 'investigating'
   );
-  const [service, setService] = useState(initialData?.service || '');
+  const [service, setService] = useState<string>(initialData?.service_id || '');
+
+  // Reset the form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description);
+      setStatus(initialData.status);
+      setService(initialData.service_id);
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      id: initialData?.id || Date.now(),
+    onSave({
+      id: initialData?.id || Date.now().toString(),
       title,
       description,
       status,
-      service,
-      updatedAt: new Date().toISOString(),
-      createdAt: initialData?.createdAt || new Date().toISOString(),
+      service_id: service,
+      UpdatedAt: new Date().toISOString(),
+      CreatedAt: initialData?.CreatedAt || new Date().toISOString(),
+      priority: 'low'
     });
   };
 
@@ -91,7 +103,12 @@ const IncidentForm: React.FC<IncidentFormProps> = ({
         </select>
       </div>
 
-      <Button type='submit'>Save Incident</Button>
+      <div className='flex space-x-2'>
+        <Button type='submit'>Save Incident</Button>
+        <Button type='button' onClick={onCancel} variant='outline'>
+          Cancel
+        </Button>
+      </div>
     </form>
   );
 };

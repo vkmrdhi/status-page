@@ -1,52 +1,87 @@
-import React from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Profile from '@/components/auth/Profile';
-import LogoutButton from '@/components/auth/LogoutButton';
-import { Plus, Server } from 'lucide-react';
+import { Server } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { getServices, updateService } from '@/lib/api';
+import ServiceStatusRow from '@/components/services/ServiceStatusRow';
+
+interface Service {
+  id: string;
+  name: string;
+  status: string;
+}
 
 const DashboardPage: React.FC = () => {
-  const { user } = useAuth0();
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const data = await getServices();
+        setServices(data);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      const updatedService = await updateService(id, { status: newStatus });
+      setServices((prevServices) =>
+        prevServices.map((service) =>
+          service.id === id ? { ...service, ...updatedService } : service
+        )
+      );
+    } catch (error) {
+      console.error('Error updating service status:', error);
+    }
+  };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Profile Section */}
-        <div className="md:col-span-1">
-          <Profile />
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button className="w-full" variant="outline">
-                <Plus className="mr-2 h-4 w-4" />
-                Add New Service
-              </Button>
-              <Button className="w-full" variant="outline">
-                <Server className="mr-2 h-4 w-4" />
-                Manage Services
-              </Button>
-              <LogoutButton />
-            </CardContent>
-          </Card>
+    <div className='container mx-auto p-6'>
+      <div className='grid grid-cols-1 gap-6'>
+        <div className='flex justify-end'>
+          <Button onClick={() => navigate('/services')}>
+            <Server className='mr-2 h-4 w-4' />
+            Manage Services
+          </Button>
         </div>
-
-        {/* Services Overview */}
-        <div className="md:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Services</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* TODO: Implement service list */}
-              <p className="text-muted-foreground">
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Services</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <LoadingSpinner message='Loading services...' />
+            ) : services.length === 0 ? (
+              <p className='text-muted-foreground'>
                 No services configured. Click "Add New Service" to get started.
               </p>
-            </CardContent>
-          </Card>
-        </div>
+            ) : (
+              <ul className='space-y-4'>
+                {services.map((service) => (
+                  <ServiceStatusRow
+                    key={service.id}
+                    name={service.name}
+                    status={service.status}
+                    onClick={(newStatus) =>
+                      handleStatusChange(service.id, newStatus)
+                    }
+                  />
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

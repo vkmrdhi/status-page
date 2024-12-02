@@ -22,7 +22,7 @@ const LogoutButton: React.FC = () => {
     <Button 
       variant="destructive"
       onClick={handleLogout}
-      className="flex items-center space-x-2"
+      className="flex w-full items-center space-x-2"
     >
       <LogOut className="mr-2 h-4 w-4" />
       Log Out

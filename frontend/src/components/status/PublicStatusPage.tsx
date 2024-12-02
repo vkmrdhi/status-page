@@ -1,50 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  AlertCircle,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-} from 'lucide-react';
 import { useAuth0 } from '@auth0/auth0-react';
-
-interface Service {
-  id: number;
-  name: string;
-  status: keyof typeof StatusBadgeMap;
-}
-
-interface Incident {
-  id: number;
-  title: string;
-  service: string;
-  status: string;
-  updatedAt: string;
-}
-
-const StatusBadgeMap = {
-  operational: {
-    icon: <CheckCircle2 className='text-green-500' />,
-    label: 'Operational',
-    className: 'bg-green-100 text-green-800',
-  },
-  degraded: {
-    icon: <AlertTriangle className='text-yellow-500' />,
-    label: 'Degraded Performance',
-    className: 'bg-yellow-100 text-yellow-800',
-  },
-  partial_outage: {
-    icon: <AlertCircle className='text-orange-500' />,
-    label: 'Partial Outage',
-    className: 'bg-orange-100 text-orange-800',
-  },
-  major_outage: {
-    icon: <XCircle className='text-red-500' />,
-    label: 'Major Outage',
-    className: 'bg-red-100 text-red-800',
-  },
-};
+import { Incident, Service } from '@/types/types';
+import ServiceStatusRow from '../services/ServiceStatusRow';
+import ServiceStatusCard from '../services/ServiceStatusCard';
 
 const PublicStatusPage: React.FC = () => {
   const { getAccessTokenSilently } = useAuth0();
@@ -58,18 +17,20 @@ const PublicStatusPage: React.FC = () => {
   const fetchStatusData = async () => {
     try {
       const mockServices: Service[] = [
-        { id: 1, name: 'Website', status: 'operational' },
-        { id: 2, name: 'API', status: 'degraded' },
-        { id: 3, name: 'Database', status: 'major_outage' },
+        { id: 'web', name: 'Website', status: 'operational' },
+        { id: 'api', name: 'API', status: 'degraded' },
+        { id: 'db', name: 'Database', status: 'major_outage' },
       ];
 
       const mockIncidents: Incident[] = [
         {
-          id: 1,
+          id: 'api',
           title: 'API Performance Issues',
           service: 'API',
           status: 'investigating',
           updatedAt: new Date().toISOString(),
+          description: 'API Performance down',
+          createdAt: new Date().toISOString(),
         },
       ];
 
@@ -148,21 +109,9 @@ const PublicStatusPage: React.FC = () => {
           <CardTitle>Service Status</CardTitle>
         </CardHeader>
         <CardContent>
-          {services.map((service) => {
-            const { icon, label, className } = StatusBadgeMap[service.status];
-            return (
-              <div
-                key={service.id}
-                className='flex justify-between items-center py-3 border-b last:border-b-0'
-              >
-                <span className='font-medium'>{service.name}</span>
-                <div className='flex items-center space-x-2'>
-                  {icon}
-                  <Badge className={className}>{label}</Badge>
-                </div>
-              </div>
-            );
-          })}
+          {services.map((service) => (
+            <ServiceStatusCard name={service.name} status={service.status} />
+          ))}
         </CardContent>
       </Card>
 
