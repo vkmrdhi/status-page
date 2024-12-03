@@ -148,7 +148,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ## 📞 Contact
 Your Name - pk2698@gmail.com
 
-Project Link: [https://github.com/vikasatfactors/status-page-app](https://github.com/vikasatfactors/status-page-app)
+Project Link: [Status Page](https://github.com/vikasatfactors/status-page-app)
 
 ## ⚠️ Security Note
 🚨 **Important**: Replace the dummy credentials with your actual configuration in a real-world deployment.
