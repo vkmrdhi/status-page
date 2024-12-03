@@ -54,7 +54,7 @@ func GetTeam(c *gin.Context) {
 
 	id := c.Param("id")
 	var team models.Team
-	if err := models.DB.First(&team, id).Error; err != nil {
+	if err := models.DB.First(&team, "id = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Team not found"})
 		} else {
@@ -75,7 +75,7 @@ func UpdateTeam(c *gin.Context) {
 
 	id := c.Param("id")
 	var team models.Team
-	if err := models.DB.First(&team, id).Error; err != nil {
+	if err := models.DB.First(&team, "id = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Team not found"})
 		return
 	}
@@ -104,4 +104,30 @@ func DeleteTeam(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Team deleted"})
+}
+
+// Add user to a team
+func AddUserToTeam(c *gin.Context) {
+	var input struct {
+		UserID string `json:"user_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	teamID := c.Param("team_id")
+	var team models.Team
+	if err := models.DB.First(&team, "id = ?", teamID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Team not found"})
+		return
+	}
+
+	member := models.TeamMembers{TeamID: team.ID, UserID: input.UserID}
+	if err := models.DB.Create(&member).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User added to team"})
 }
